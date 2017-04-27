@@ -55,21 +55,19 @@ def hashline(line):
     return mtime, fn, sha, size, ino
 
 firstmap = {}
-firstino = {}
 shrinkage = 0
 
 for mtime,fn,sha,size,ino in sorted(map(hashline, open(infile))):
     if sha in firstmap:
-        if firstino[sha] != ino and size > minsize:
-            first = firstmap[sha]
-            print "%d : %s -> %s" % (size, fn, first)
+        firstfn, firstino = firstmap[sha]
+        if firstino != ino and size > minsize:
+            print "%d : %s -> %s" % (size, fn, firstfn)
             shrinkage += size
             if not dryrun:
                 os.unlink(fn)
-                os.link(first, fn)
+                os.link(firstfn, fn)
     else:
-        firstmap[sha] = fn
-        firstino[sha] = ino
+        firstmap[sha] = (fn,ino)
 
 print "%d : total (%s)" % (shrinkage, kmg(shrinkage))
 
