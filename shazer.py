@@ -34,6 +34,8 @@ infile = args[0]
 
 def hashline(line):
     line = line.rstrip('\n')
+    if not re.match(r'[0-9a-f]{40}  .', line):
+        print >>sys.stderr, "skipping malformed line: '%s'" % line
     sha = line[:40]
     fn = line[42:]
     st = os.stat(fn)
