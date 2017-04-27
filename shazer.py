@@ -13,7 +13,7 @@ globpat = None
 nocase  = False
 
 def usage():
-    print "usage: %s [-x] [-v] [-s minsize] [-g globpat] shasfile" \
+    print "usage: %s [-x] [-v] [-s minsize] [-g globpat] shasums" \
                   % os.path.basename(__file__)
     print
     print "Options:"
@@ -23,6 +23,9 @@ def usage():
     print "  -i           globpat is case-insensitive"
     print "  -s minsize   ignore files smaller than minsize (default is %d)" \
                                                                  % minsize
+    print
+    print "Generate shasums with:"
+    print "  find dir/ [...] -type f -exec sha1sum {} + > shasums"
     sys.exit(0)
 
 try:
