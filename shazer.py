@@ -7,18 +7,21 @@ import re
 
 dryrun = True
 minsize = 1024
+verbose = False
 
 def usage():
-    print "usage: %s [-x] [-s minsize] shasfile" % os.path.basename(__file__)
+    print "usage: %s [-x] [-v] [-s minsize] shasfile" \
+                  % os.path.basename(__file__)
     print
     print "Options:"
     print "  -x           execute (default is dry-run)"
+    print "  -v           verbose; show each file pair to be linked"
     print "  -s minsize   ignore files smaller than minsize (default is %d)" \
                                                                  % minsize
     sys.exit(0)
 
 try:
-    opts, args = getopt.getopt(sys.argv[1:], 'xs:')
+    opts, args = getopt.getopt(sys.argv[1:], 'xvs:')
 except getopt.GetoptError:
     usage()
 
@@ -27,6 +30,8 @@ for k,v in opts:
         dryrun = False
     elif k == '-s':
         minsize = int(v)
+    elif k == '-v':
+        verbose = True
 
 if len(args) != 1:
     usage()
@@ -61,7 +66,8 @@ for mtime,fn,sha,size,ino in sorted(map(hashline, open(infile))):
     if sha in firstmap:
         firstfn, firstino = firstmap[sha]
         if firstino != ino and size > minsize:
-            print "%d : %s -> %s" % (size, fn, firstfn)
+            if verbose:
+                print "%d : %s -> %s" % (size, fn, firstfn)
             shrinkage += size
             if not dryrun:
                 os.unlink(fn)
