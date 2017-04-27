@@ -3,6 +3,7 @@
 import getopt
 import sys
 import os
+import re
 
 dryrun = True
 minsize = 1024
@@ -31,6 +32,15 @@ if len(args) != 1:
     usage()
 
 infile = args[0]
+
+def kmg(n):
+    sufidx = 0
+    sufs = ' KMGTPEZY'
+    while n > 1126:
+        sufidx += 1
+        n /= 1024.0
+    return ("%.1f%s" % (n, sufs[sufidx])).rstrip(' 0.')
+
 
 def hashline(line):
     line = line.rstrip('\n')
@@ -61,5 +71,5 @@ for mtime,fn,sha,size,ino in sorted(map(hashline, open(infile))):
         firstmap[sha] = fn
         firstino[sha] = ino
 
-print "%d : total" % shrinkage
+print "%d : total (%s)" % (shrinkage, kmg(shrinkage))
 
