@@ -4,21 +4,26 @@ import getopt
 import sys
 import os
 
-dryrun = False
+dryrun = True
 minsize = 1024
 
 def usage():
-    print "usage: %s [-n] [-s minsize] shasfile" % os.path.basename(__file__)
+    print "usage: %s [-x] [-s minsize] shasfile" % os.path.basename(__file__)
+    print
+    print "Options:"
+    print "  -x           execute (default is dry-run)"
+    print "  -s minsize   ignore files smaller than minsize (default is %d)" \
+                                                                 % minsize
     sys.exit(0)
 
 try:
-    opts, args = getopt.getopt(sys.argv[1:], 'ns:')
+    opts, args = getopt.getopt(sys.argv[1:], 'xs:')
 except getopt.GetoptError:
     usage()
 
 for k,v in opts:
-    if   k == '-n':
-        dryrun = True
+    if   k == '-x':
+        dryrun = False
     elif k == '-s':
         minsize = int(v)
 
