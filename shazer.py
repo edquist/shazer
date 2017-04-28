@@ -48,6 +48,8 @@ for k,v in opts:
         dryrun = False
     elif k == '-s':
         minsize,maxsize = map(un_kmg, (v.split(':') + [None])[:2])
+        if minsize == None:
+            minsize = 1
     elif k == '-v':
         verbose = True
     elif k == '-g':
