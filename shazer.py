@@ -92,8 +92,7 @@ def hashline(line):
     return sha, mtime, fn, st
 
 def sizeok(size):
-    return (minsize is None or size >= minsize) \
-       and (maxsize is None or size <= maxsize)
+    return size >= minsize and (maxsize is None or size <= maxsize)
 
 lastsha = ''
 shrinkage = 0
