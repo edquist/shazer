@@ -7,7 +7,7 @@ import os
 import re
 
 dryrun  = True
-minsize = None
+minsize = 1
 maxsize = None
 verbose = False
 globpat = None
