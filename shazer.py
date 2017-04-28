@@ -71,7 +71,7 @@ def kmg(n):
     while n > 1126:
         sufidx += 1
         n /= 1024.0
-    return ("%.1f%s" % (n, sufs[sufidx])).rstrip(' 0.')
+    return ("%.1f%s" % (n, sufs[sufidx])).rstrip(' 0').rstrip('.')
 
 def globmatch(fn):
     fn = os.path.basename(fn)
