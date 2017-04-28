@@ -87,9 +87,7 @@ def hashline(line):
         return
     st = os.stat(fn)
     mtime = st.st_mtime
-    size = st.st_size
-    ino = st.st_ino
-    return mtime, fn, sha, size, ino
+    return mtime, fn, sha, st
 
 def sizeok(size):
     return (minsize is None or size >= minsize) \
@@ -97,19 +95,22 @@ def sizeok(size):
 
 firstmap = {}
 shrinkage = 0
+shrinkage_blocks = 0
 
-for mtime,fn,sha,size,ino in sorted(filter(None, map(hashline, open(infile)))):
+for mtime,fn,sha,st in sorted(filter(None, map(hashline, open(infile)))):
     if sha in firstmap:
         firstfn, firstino = firstmap[sha]
-        if firstino != ino and sizeok(size):
+        if firstino != st.st_ino and sizeok(st.st_size):
             if verbose:
-                print "%d : %s -> %s" % (size, fn, firstfn)
-            shrinkage += size
+                print "%d : %s -> %s" % (st.st_size, fn, firstfn)
+            shrinkage += st.st_size
+            shrinkage_blocks += st.st_blocks
             if not dryrun:
                 os.unlink(fn)
                 os.link(firstfn, fn)
     else:
-        firstmap[sha] = (fn,ino)
+        firstmap[sha] = (fn,st.st_ino)
 
-print "%d : total (%s)" % (shrinkage, kmg(shrinkage))
+print "%d : total (%s, %s used)" % (shrinkage, kmg(shrinkage),
+                                    kmg(shrinkage_blocks * 512))
 
