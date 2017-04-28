@@ -12,14 +12,16 @@ maxsize = None
 verbose = False
 globpat = None
 nocase  = False
+redoall = False
 
 def usage():
-    print "usage: %s [-x] [-v] [-s minsize[:maxsize]] [-g globpat] shasums" \
+    print "usage: %s [-xvai] [-s minsize[:maxsize]] [-g globpat] shasums" \
                   % os.path.basename(__file__)
     print
     print "Options:"
     print "  -x           execute (default is dry-run)"
     print "  -v           verbose; show each file pair to be linked"
+    print "  -a           process already linked files too"
     print "  -g globpat   only consider files matching globpat ('%'->'*')"
     print "  -i           globpat is case-insensitive"
     print "  -s min[:max] ignore files outside of size range"
@@ -29,7 +31,7 @@ def usage():
     sys.exit(0)
 
 try:
-    opts, args = getopt.getopt(sys.argv[1:], 'xvig:s:')
+    opts, args = getopt.getopt(sys.argv[1:], 'xvaig:s:')
 except getopt.GetoptError:
     usage()
 
@@ -52,6 +54,8 @@ for k,v in opts:
             minsize = 1
     elif k == '-v':
         verbose = True
+    elif k == '-a':
+        redoall = True
     elif k == '-g':
         globpat = v.replace('%', '*')
     elif k == '-i':
@@ -101,7 +105,7 @@ relinks = 0
 
 for sha,mtime,fn,st in sorted(filter(None, map(hashline, open(infile)))):
     if sha == lastsha:
-        if firstino != st.st_ino and sizeok(st.st_size):
+        if (redoall or firstino != st.st_ino) and sizeok(st.st_size):
             if verbose:
                 print "%d : %s -> %s" % (st.st_size, fn, firstfn)
             shrinkage += st.st_size
