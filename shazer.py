@@ -6,14 +6,15 @@ import sys
 import os
 import re
 
-dryrun = True
-minsize = 1024
+dryrun  = True
+minsize = None
+maxsize = None
 verbose = False
 globpat = None
 nocase  = False
 
 def usage():
-    print "usage: %s [-x] [-v] [-s minsize] [-g globpat] shasums" \
+    print "usage: %s [-x] [-v] [-s minsize[:maxsize]] [-g globpat] shasums" \
                   % os.path.basename(__file__)
     print
     print "Options:"
@@ -21,8 +22,7 @@ def usage():
     print "  -v           verbose; show each file pair to be linked"
     print "  -g globpat   only consider files matching globpat ('%'->'*')"
     print "  -i           globpat is case-insensitive"
-    print "  -s minsize   ignore files smaller than minsize (default is %d)" \
-                                                                 % minsize
+    print "  -s min[:max] ignore files outside of size range"
     print
     print "Generate shasums with:"
     print "  find dir/ [...] -type f -exec sha1sum {} + > shasums"
@@ -33,11 +33,21 @@ try:
 except getopt.GetoptError:
     usage()
 
+def un_kmg(sizestr):
+    sufs = 'ckmgtpezy'
+    if not sizestr:
+        return
+    idx = sufs.find(sizestr[-1].lower())
+    if idx >= 0:
+        return int(sizestr[:-1]) * 1024 ** idx
+    else:
+        return int(sizestr)
+
 for k,v in opts:
     if   k == '-x':
         dryrun = False
     elif k == '-s':
-        minsize = int(v)
+        minsize,maxsize = map(un_kmg, (v.split(':') + [None])[:2])
     elif k == '-v':
         verbose = True
     elif k == '-g':
@@ -81,13 +91,17 @@ def hashline(line):
     ino = st.st_ino
     return mtime, fn, sha, size, ino
 
+def sizeok(size):
+    return (minsize is None or size >= minsize) \
+       and (maxsize is None or size <= maxsize)
+
 firstmap = {}
 shrinkage = 0
 
 for mtime,fn,sha,size,ino in sorted(filter(None, map(hashline, open(infile)))):
     if sha in firstmap:
         firstfn, firstino = firstmap[sha]
-        if firstino != ino and size > minsize:
+        if firstino != ino and sizeok(size):
             if verbose:
                 print "%d : %s -> %s" % (size, fn, firstfn)
             shrinkage += size
