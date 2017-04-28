@@ -87,6 +87,7 @@ def hashline(line):
     line = line.rstrip('\n')
     if not re.match(r'[0-9a-f]{40}  .', line):
         print >>sys.stderr, "skipping malformed line: '%s'" % line
+        return
     sha = line[:40]
     fn = line[42:]
     if globpat is not None and not globmatch(fn):
