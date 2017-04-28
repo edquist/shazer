@@ -98,6 +98,7 @@ def sizeok(size):
 lastsha = ''
 shrinkage = 0
 shrinkage_blocks = 0
+relinks = 0
 
 for sha,mtime,fn,st in sorted(filter(None, map(hashline, open(infile)))):
     if sha == lastsha:
@@ -106,6 +107,7 @@ for sha,mtime,fn,st in sorted(filter(None, map(hashline, open(infile)))):
                 print "%d : %s -> %s" % (st.st_size, fn, firstfn)
             shrinkage += st.st_size
             shrinkage_blocks += st.st_blocks
+            relinks += 1
             if not dryrun:
                 os.unlink(fn)
                 os.link(firstfn, fn)
@@ -114,6 +116,7 @@ for sha,mtime,fn,st in sorted(filter(None, map(hashline, open(infile)))):
         firstfn  = fn
         firstino = st.st_ino
 
-print "%d : total (%s, %s used)" % (shrinkage, kmg(shrinkage),
-                                    kmg(shrinkage_blocks * 512))
+print "%d : total (%s, %s used; %d relinks)" % (shrinkage, kmg(shrinkage),
+                                                kmg(shrinkage_blocks * 512),
+                                                relinks)
 
