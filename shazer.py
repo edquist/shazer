@@ -69,6 +69,26 @@ if len(args) != 1:
 
 infile = args[0]
 
+class LazyStat(object):
+   def __get__(self, obj, objtype):
+#      print "getting stat info for '%s'" % obj.fn
+       st = os.stat(obj.fn)
+       obj.st = st
+       return st
+
+class FInfo(object):
+    st = LazyStat()
+
+    def __init__(self, sha, fn):
+        self.sha = sha
+        self.fn  = fn
+
+    # NB: {a,b}.st are not accessed unless {a,b}.sha differ
+    def __cmp__(self, other):
+        return cmp(self.sha, other.sha) \
+            or cmp(self.st.st_mtime, other.st.st_mtime) \
+            or cmp(self.fn, other.fn)
+
 def kmg(n):
     sufidx = 0
     sufs = ' KMGTPEZY'
@@ -92,33 +112,30 @@ def hashline(line):
     fn = line[42:]
     if globpat is not None and not globmatch(fn):
         return
-    st = os.stat(fn)
-    mtime = st.st_mtime
-    return sha, mtime, fn, st
+    return FInfo(sha, fn)
 
 def sizeok(size):
     return size >= minsize and (maxsize is None or size <= maxsize)
 
-lastsha = ''
+last = FInfo(None, None)
 shrinkage = 0
 shrinkage_blocks = 0
 relinks = 0
 
-for sha,mtime,fn,st in sorted(filter(None, map(hashline, open(infile)))):
-    if sha == lastsha:
-        if (redoall or firstino != st.st_ino) and sizeok(st.st_size):
+for fi in sorted(filter(None, map(hashline, open(infile)))):
+    if fi.sha == last.sha:
+        if (redoall or last.st.st_ino != fi.st.st_ino) \
+                             and sizeok(fi.st.st_size):
             if verbose:
-                print "%d : %s -> %s" % (st.st_size, fn, firstfn)
-            shrinkage += st.st_size
-            shrinkage_blocks += st.st_blocks
+                print "%d : %s -> %s" % (fi.st.st_size, fi.fn, last.fn)
+            shrinkage += fi.st.st_size
+            shrinkage_blocks += fi.st.st_blocks
             relinks += 1
             if not dryrun:
-                os.unlink(fn)
-                os.link(firstfn, fn)
+                os.unlink(fi.fn)
+                os.link(last.fn, fi.fn)
     else:
-        lastsha  = sha
-        firstfn  = fn
-        firstino = st.st_ino
+        last = fi
 
 print "%d : total (%s, %s used; %d relinks)" % (shrinkage, kmg(shrinkage),
                                                 kmg(shrinkage_blocks * 512),
