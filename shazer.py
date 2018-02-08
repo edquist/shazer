@@ -83,7 +83,7 @@ class FInfo(object):
         self.sha = sha
         self.fn  = fn
 
-    # NB: {a,b}.st are not accessed unless {a,b}.sha differ
+    # NB: {a,b}.st are not accessed unless {a,b}.sha match
     def __cmp__(self, other):
         return cmp(self.sha, other.sha) \
             or cmp(self.st.st_mtime, other.st.st_mtime) \
