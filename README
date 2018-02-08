@@ -1,0 +1,23 @@
+shazer - find and hardlink duplicate files based on checksums
+
+
+Generate a checksums file with your favorite shasum program and list
+the space that could be recovered by hardlinking duplicate files.
+
+Run with -v to list all duplicates, run with -x to create the hardlinks.
+
+---
+
+usage: shazer.py [-xvai] [-s minsize[:maxsize]] [-g globpat] shasums
+
+Options:
+  -x           execute; link duplicate files (default is dry-run)
+  -v           verbose; show each file pair to be linked
+  -a           process already linked files too
+  -g globpat   only consider files matching globpat ('%'->'*')
+  -i           globpat is case-insensitive
+  -s min[:max] ignore files outside of size range
+
+Generate shasums with:
+  find dir/ [...] -type f -exec sha1sum {} + > shasums
+
