@@ -103,13 +103,22 @@ def globmatch(fn):
         fn = fn.lower()
     return glob.fnmatch.fnmatch(fn, globpat)
 
+def unescape(fn):
+    helper = lambda m: {'\\': '\\', 'n': '\n'}[m.group(1)]
+    return re.sub(r'\\([\\n])', helper, fn)
+
 def hashline(line):
     line = line.rstrip('\n')
-    if not re.match(r'[0-9a-f]{40}  .', line):
+    m = line.startswith('\\') and re.match(r'\\([0-9a-f]{40})  (.+)', line)
+    if m:
+        sha, efn = m.groups()
+        fn = unescape(efn)
+    elif re.match(r'[0-9a-f]{40}  .', line):
+        sha = line[:40]
+        fn = line[42:]
+    else:
         print >>sys.stderr, "skipping malformed line: '%s'" % line
         return
-    sha = line[:40]
-    fn = line[42:]
     if globpat is not None and not globmatch(fn):
         return
     return FInfo(sha, fn)
