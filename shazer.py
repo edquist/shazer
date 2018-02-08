@@ -146,7 +146,6 @@ for fi in sorted(filter(None, map(hashline, open(infile)))):
     else:
         last = fi
 
-print "%d : total (%s, %s used; %d relinks)" % (shrinkage, kmg(shrinkage),
-                                                kmg(shrinkage_blocks * 512),
-                                                relinks)
+print "%d : total (%s, %s used; %d relinks)" % (
+    shrinkage, kmg(shrinkage), kmg(shrinkage_blocks * 512), relinks)
 
