@@ -19,7 +19,7 @@ def usage():
                   % os.path.basename(__file__)
     print
     print "Options:"
-    print "  -x           execute (default is dry-run)"
+    print "  -x           execute; link duplicate files (default is dry-run)"
     print "  -v           verbose; show each file pair to be linked"
     print "  -a           process already linked files too"
     print "  -g globpat   only consider files matching globpat ('%'->'*')"
